@@ -225,13 +225,13 @@ Es würde einfach in andere Datei angerufen werden. -->
     <!-- erstellt Hauptanteil des Modells, definiert ein Nullpunkt, um Modell aufzubauen. Es ist einfach für weitere
     Darstellungspostion in Simulation-Umgebung -->
     <xacro:macro name="limo_ackermann">
-        <!-- <link name="base_footprint"/>
+        <link name="base_footprint"/>
 
         <joint name="base_joint" type="fixed">
             <parent link="base_footprint"/>
             <child link="base_link"/>
             <origin xyz="0.0 0.0 0.15" rpy="0 0 0"/>
-        </joint> -->
+        </joint>
 
         <!-- herstellt base_link -->
         <link name="base_link">

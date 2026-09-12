@@ -297,3 +297,8 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# *.mod* above (kernel module build artifacts) accidentally matches Gazebo
+# world files (*.model) too. limo_car ships no world files, which breaks
+# the sim (gzserver hangs trying to open a nonexistent world) — keep this one.
+!limo_car/worlds/*.model

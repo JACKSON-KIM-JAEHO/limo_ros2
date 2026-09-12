@@ -12,7 +12,9 @@ from ament_index_python.packages import get_package_share_directory
 
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument
+from launch.actions import ExecuteProcess
 from launch.actions import IncludeLaunchDescription
+from launch.actions import TimerAction
 from launch.substitutions import LaunchConfiguration
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 
@@ -51,10 +53,22 @@ def generate_launch_description():
         )]), launch_arguments={'use_sim_time': 'true', 'world': world_path}.items()
     )
 
-    # Einbindung der Gazebo-Startdatei, die im gazebo_ros-Paket enthalten ist
-    gazebo = IncludeLaunchDescription(
+    # Nur gzserver aus dem gazebo_ros-Paket einbinden. gzclient wird unten
+    # separat gestartet (ohne das "eol_gui"-Plugin, siehe Kommentar dort).
+    gazebo_server = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch', 'gazebo.launch.py')]),
+            get_package_share_directory('gazebo_ros'), 'launch', 'gzserver.launch.py')]),
+        launch_arguments={'world': world_path}.items()
+    )
+
+    # gazebo_ros/launch/gzclient.launch.py hängt fest "--gui-client-plugin=
+    # libgazebo_ros_eol_gui.so" an (End-of-Life-Hinweisfenster für Gazebo
+    # Classic). Dieses Plugin stürzt bei uns mit einer Camera-Assertion ab,
+    # bevor irgendein Rendering stattfindet. Deshalb starten wir gzclient
+    # hier direkt, ohne dieses Plugin.
+    gazebo_client = ExecuteProcess(
+        cmd=['gzclient'],
+        output='screen',
     )
 
     # laufen ein leere node aus den gazebo_ros package
@@ -68,10 +82,16 @@ def generate_launch_description():
                         output='screen')
 
 
+    # gzclient braucht Zeit, um seine eigene Kamera zu initialisieren, bevor
+    # es eine "Modell einfügen"-Nachricht von gzserver verarbeiten kann.
+    # Ohne Verzögerung stürzt gzclient mit einer Camera-Assertion ab.
+    delayed_spawn_entity = TimerAction(period=5.0, actions=[spawn_entity])
+
     return LaunchDescription([
         mbot,
-        gazebo,
-        spawn_entity,
+        gazebo_server,
+        gazebo_client,
+        delayed_spawn_entity,
         rviz_arg,
         rviz_node
     ])

@@ -11,6 +11,7 @@ andere Sensoren zusammengebaut werden und laden sie das Modell in Gazebo.-->
     <xacro:include filename="$(find limo_car)/gazebo/ackermann.xacro" />
     <xacro:include filename="$(find limo_car)/gazebo/sensor.xacro" />
 
+    <xacro:limo_ackermann/>
 
     <!-- ************************* Laser ****************************** -->
     <xacro:gazebo_laser frame_prefix="laser" />
@@ -21,6 +22,10 @@ andere Sensoren zusammengebaut werden und laden sie das Modell in Gazebo.-->
         <child link="laser_link"/>
     </joint>
     <!-- ************************* Depth-camera *********************** -->
+    <!-- Disabled: this camera sensor crashes gzserver (rendering::Scene
+         assertion) as soon as the model is spawned, independent of the
+         display session (X11/Wayland) or the gzclient EOL-plugin fix. -->
+    <!--
     <xacro:gazebo_depth_camera frame_prefix="depth_camera" />
 
     <joint name="depth_camera_joint" type="fixed">
@@ -28,6 +33,7 @@ andere Sensoren zusammengebaut werden und laden sie das Modell in Gazebo.-->
         <parent link="base_link"/>
         <child link="depth_camera_link"/>
     </joint>
+    -->
     <!-- ************************* IMU ******************************** -->
     <xacro:gazebo_imu frame_prefix="imu" />
 
