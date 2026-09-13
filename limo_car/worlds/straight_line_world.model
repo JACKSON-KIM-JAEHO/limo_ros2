@@ -1,62 +1,58 @@
 <?xml version="1.0" ?>
 <sdf version="1.6">
   <world name="default">
-    <scene>
-      <ambient>0.4 0.4 0.4 1</ambient>
-      <background>0.7 0.7 0.7 1</background>
-      <shadows>0</shadows>
-    </scene>
-
     <plugin name="gazebo_ros_properties" filename="libgazebo_ros_properties.so">
       <ros/>
     </plugin>
 
     <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
       <uri>model://sun</uri>
     </include>
 
-    <!-- Race track ground plane. Texture/model from the SKKUAutoLab
-         H-Mobility-Autonomous-Advanced-Course-Simulation repo (GPL-2.0),
-         reused here as a vehicle-agnostic textured floor (not a Gazebo
-         "model" with its own robot, just a material).
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
 
-         Original plane was 53.83 x 40.473 m, sized for their real-scale
-         cars (prius_hybrid chassis ~4.5m). LIMO is ~0.3m, about 1/14 that
-         length, so the same plane is scaled down ~1/13.5 (aspect ratio
-         kept at 4:3 ≈ original 1.33 ratio) to roughly match LIMO's scale. -->
-    <model name="ground">
-      <pose>0 0 0 0 0 1.57</pose>
-      <static>1</static>
-      <link name="ground">
-        <collision name="ground_collision">
-          <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>8.25 6.2</size>
-            </plane>
-          </geometry>
+    <!-- Geradeausfahrt-Übung: ein ~1.2m breiter, 8m langer Korridor mit
+         zwei Wänden, plus ein Hindernis in der Mitte für die
+         Hinderniserkennungs-/Stopp-Logik (LiDAR). Startpose bei x=-3.5,
+         schaut in +X-Richtung den Korridor entlang. -->
+    <model name="corridor_wall_left">
+      <static>true</static>
+      <pose>0 0.6 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>8.0 0.05 0.3</size></box></geometry>
         </collision>
-        <visual name="ground_visual">
-          <geometry>
-            <plane>
-              <normal>0 0 1</normal>
-              <size>8.25 6.2</size>
-            </plane>
-          </geometry>
-          <material>
-            <script>
-              <uri>model://race_track/materials/scripts</uri>
-              <uri>model://race_track/materials/textures</uri>
-              <name>track</name>
-            </script>
-          </material>
+        <visual name="visual">
+          <geometry><box><size>8.0 0.05 0.3</size></box></geometry>
+          <material><script><name>Gazebo/Yellow</name></script></material>
         </visual>
       </link>
     </model>
 
-    <!-- Ampel neben der Spur (bestätigte Position). -->
+    <model name="corridor_wall_right">
+      <static>true</static>
+      <pose>0 -0.6 0.15 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>8.0 0.05 0.3</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>8.0 0.05 0.3</size></box></geometry>
+          <material><script><name>Gazebo/Yellow</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Ampel am Korridorrand, kurz vor dem Hindernis. -->
     <model name="traffic_light">
-      <pose>0.962097 -3.800278 -0.739091 0 0 -1.787240</pose>
+      <pose>-2.467488 0.439599 -0.772901 0 0 -1.291641</pose>
     <static>true</static>
 
     <!-- Pole + housing. Separate from the lens links below so the
@@ -130,28 +126,18 @@
     </plugin>
   </model>
 
-    <!-- Hindernisse auf der Strecke (bestätigte Positionen). -->
-    <model name="track_obstacle_1">
+    <model name="obstacle_1">
       <static>true</static>
-      <pose>2.550257 -0.355558 0.1 0 0 0</pose>
+      <pose>2.0 0 0.1 0 0 0</pose>
       <link name="link">
-        <collision name="collision"><geometry><box><size>0.15 0.15 0.2</size></box></geometry></collision>
-        <visual name="visual"><geometry><box><size>0.15 0.15 0.2</size></box></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
+        <collision name="collision">
+          <geometry><box><size>0.1 0.2 0.2</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 0.2 0.2</size></box></geometry>
+          <material><script><name>Gazebo/Red</name></script></material>
+        </visual>
       </link>
     </model>
-    <model name="track_obstacle_2">
-      <static>true</static>
-      <pose>-1.456148 0.411335 0.1 0 0 0</pose>
-      <link name="link">
-        <collision name="collision"><geometry><box><size>0.15 0.15 0.2</size></box></geometry></collision>
-        <visual name="visual"><geometry><box><size>0.15 0.15 0.2</size></box></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
-      </link>
-    </model>
-
-    <physics type="ode">
-      <real_time_update_rate>1000.0</real_time_update_rate>
-      <max_step_size>0.001</max_step_size>
-      <real_time_factor>1</real_time_factor>
-    </physics>
   </world>
 </sdf>
