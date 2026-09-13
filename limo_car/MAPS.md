@@ -15,7 +15,20 @@ ros2 launch limo_car ackermann_sim.launch.py map:=<맵이름>
 공통 사항:
 - `gzserver`는 `xvfb-run`(가상 디스플레이) 안에서 뜹니다 — depth camera 센서가 실제 디스플레이(X11/Wayland)에서 렌더링 충돌로 크래시하는 문제를 우회하기 위함입니다. `gzclient`(3D 뷰어)는 실제 화면에 정상적으로 뜹니다.
 - RViz가 같이 뜨며 `/scan`, `/odom`, `/imu`, depth camera 토픽을 확인할 수 있습니다.
+- **`limo_dashboard`(커스텀 Qt 대시보드)가 항상 같이 뜹니다** — 신호등 색 버튼(빨강/노랑/초록)과 로봇 조종 슬라이더(`rqt_robot_steering` 대체)가 한 창에 있습니다. 아래 "대시보드" 절 참고.
 - 로봇 스폰 위치/자세는 각 맵마다 다르며, 아래 표에 기재되어 있습니다.
+
+## 대시보드 (`limo_dashboard`)
+
+`ros2 launch limo_car ackermann_sim.launch.py map:=...`를 실행하면 자동으로 같이 뜹니다. 단독 실행도 가능합니다:
+
+```bash
+ros2 run limo_dashboard dashboard_node
+```
+
+- **Traffic Light**: 빨강/노랑/초록 버튼 — 누른 색만 켜지고 나머지는 꺼집니다 (`/set_light_properties` 서비스 호출, `traffic_light::pole::<color>_light`를 대상으로 함 — 모든 맵이 신호등 인스턴스 이름을 `traffic_light`로 통일해서 썼기 때문에 어느 맵에서든 동일하게 동작합니다).
+- **Robot Steering**: 선속도/각속도 슬라이더 → `/cmd_vel` 퍼블리시 (20Hz 지속 발행). 마우스를 떼면 슬라이더가 0으로 복귀합니다 (안전을 위해 `rqt_robot_steering`과 동일한 동작). STOP 버튼으로 즉시 정지.
+- 소스: `limo_dashboard/limo_dashboard/dashboard_node.py`. 패널을 더 추가하려면 `_build_..._group(self)` 메서드를 하나 더 만들고 `_build_ui`의 레이아웃에 추가하면 됩니다.
 
 ## 맵 목록
 

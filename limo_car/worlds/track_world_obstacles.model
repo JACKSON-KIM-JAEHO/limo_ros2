@@ -51,7 +51,7 @@
 
     <model name="track_obstacle_1">
       <static>true</static>
-      <pose>0.4863 -3.2524 0.1 0 0 0</pose>
+      <pose>2.550257 -0.355558 0.1 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.15 0.15 0.2</size></box></geometry>
@@ -65,7 +65,7 @@
 
     <model name="track_obstacle_2">
       <static>true</static>
-      <pose>1.4863 -3.2524 0.1 0 0 0</pose>
+      <pose>-1.456148 0.411335 0.1 0 0 0</pose>
       <link name="link">
         <collision name="collision">
           <geometry><box><size>0.15 0.15 0.2</size></box></geometry>
@@ -79,7 +79,7 @@
 
     <!-- Ampel neben der Spur (bestätigte Position). -->
     <model name="traffic_light">
-      <pose>0.5 -3.55 0 0 0 1.5708</pose>
+      <pose>0.962097 -3.800278 -0.739091 0 0 -1.787240</pose>
     <static>true</static>
 
     <link name="pole">

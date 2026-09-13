@@ -87,6 +87,13 @@ def launch_setup(context, *args, **kwargs):
         arguments=['-d', default_rviz_config_path],
     )
 
+    dashboard_node = Node(
+        package='limo_dashboard',
+        executable='dashboard_node',
+        name='limo_dashboard',
+        output='screen',
+    )
+
     mbot = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(pkg_path, 'launch', 'ackermann.launch.py')]),
         launch_arguments={'use_sim_time': 'true', 'world': world_path}.items()
@@ -129,7 +136,7 @@ def launch_setup(context, *args, **kwargs):
     # es eine "Modell einfügen"-Nachricht von gzserver verarbeiten kann.
     delayed_spawn_entity = TimerAction(period=5.0, actions=[spawn_entity])
 
-    return [mbot, gazebo_server, gazebo_client, delayed_spawn_entity, rviz_node]
+    return [mbot, gazebo_server, gazebo_client, delayed_spawn_entity, rviz_node, dashboard_node]
 
 
 def generate_launch_description():

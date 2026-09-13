@@ -21,7 +21,8 @@
   <depend>gazebo</depend>
   <depend>libgazebo_ros</depend>
   <depend>rqt_robot_steering</depend>
-  
+  <exec_depend>limo_dashboard</exec_depend>
+
   <export>
     <build_type>ament_cmake</build_type>
   </export>
