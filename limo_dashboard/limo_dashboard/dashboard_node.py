@@ -38,7 +38,7 @@ from std_msgs.msg import String
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QGroupBox, QPushButton, QLabel,
+    QFormLayout, QGroupBox, QPushButton, QLabel, QDoubleSpinBox,
 )
 
 LIGHT_COLORS = ['red', 'yellow', 'green']
@@ -62,6 +62,11 @@ LINEAR_UP_KEYS = {Qt.Key_W}
 LINEAR_DOWN_KEYS = {Qt.Key_X}
 ANGULAR_UP_KEYS = {Qt.Key_E}
 ANGULAR_DOWN_KEYS = {Qt.Key_C}
+
+# Bounds for the max-speed / max-turn spin boxes (also clamp the q/z/w/x/e/c
+# keyboard step so the two controls can't drift out of sync with each other).
+SPEED_MIN, SPEED_MAX = 0.05, 3.0
+TURN_MIN, TURN_MAX = 0.1, 5.0
 
 
 class DashboardNode(Node):
@@ -149,11 +154,30 @@ class DashboardWindow(QMainWindow):
         layout.addWidget(QLabel(
             'i/,: forward/back   j/l: turn left/right\n'
             '(hold i, tap j/l to curve - releasing j/l re-centers steering)\n'
-            'k: stop   q/z: speed ±10%   w/x: linear only   e/c: angular only'
+            'k: stop   or set the limits below (q/z/w/x/e/c keys do the same)'
         ))
 
-        self.speed_label = QLabel(f'speed {self._speed:.2f} m/s  turn {self._turn:.2f} rad/s')
-        layout.addWidget(self.speed_label)
+        self.speed_spin = QDoubleSpinBox()
+        self.speed_spin.setRange(SPEED_MIN, SPEED_MAX)
+        self.speed_spin.setSingleStep(0.05)
+        self.speed_spin.setDecimals(2)
+        self.speed_spin.setSuffix(' m/s')
+        self.speed_spin.setValue(self._speed)
+        self.speed_spin.valueChanged.connect(self._set_speed)
+
+        self.turn_spin = QDoubleSpinBox()
+        self.turn_spin.setRange(TURN_MIN, TURN_MAX)
+        self.turn_spin.setSingleStep(0.1)
+        self.turn_spin.setDecimals(2)
+        self.turn_spin.setSuffix(' rad/s')
+        self.turn_spin.setValue(self._turn)
+        self.turn_spin.valueChanged.connect(self._set_turn)
+
+        limits_layout = QFormLayout()
+        limits_layout.addRow('Max speed:', self.speed_spin)
+        limits_layout.addRow('Max turn:', self.turn_spin)
+        layout.addLayout(limits_layout)
+
         self.cmd_label = QLabel('linear 0.00 m/s  angular 0.00 rad/s')
         layout.addWidget(self.cmd_label)
 
@@ -201,24 +225,37 @@ class DashboardWindow(QMainWindow):
             self._angular = 0.0
             self._active_angular_key = None
         elif key in SPEED_UP_KEYS:
-            self._speed *= SPEED_STEP
-            self._turn *= SPEED_STEP
+            self._set_speed(self._speed * SPEED_STEP)
+            self._set_turn(self._turn * SPEED_STEP)
         elif key in SPEED_DOWN_KEYS:
-            self._speed /= SPEED_STEP
-            self._turn /= SPEED_STEP
+            self._set_speed(self._speed / SPEED_STEP)
+            self._set_turn(self._turn / SPEED_STEP)
         elif key in LINEAR_UP_KEYS:
-            self._speed *= SPEED_STEP
+            self._set_speed(self._speed * SPEED_STEP)
         elif key in LINEAR_DOWN_KEYS:
-            self._speed /= SPEED_STEP
+            self._set_speed(self._speed / SPEED_STEP)
         elif key in ANGULAR_UP_KEYS:
-            self._turn *= SPEED_STEP
+            self._set_turn(self._turn * SPEED_STEP)
         elif key in ANGULAR_DOWN_KEYS:
-            self._turn /= SPEED_STEP
+            self._set_turn(self._turn / SPEED_STEP)
         else:
             super().keyPressEvent(event)
             return
-        self.speed_label.setText(f'speed {self._speed:.2f} m/s  turn {self._turn:.2f} rad/s')
         self._update_cmd_label()
+
+    def _set_speed(self, value):
+        """Set max linear speed - shared by the spin box and q/w/x keys."""
+        self._speed = max(SPEED_MIN, min(SPEED_MAX, value))
+        self.speed_spin.blockSignals(True)
+        self.speed_spin.setValue(self._speed)
+        self.speed_spin.blockSignals(False)
+
+    def _set_turn(self, value):
+        """Set max angular turn rate - shared by the spin box and e/c/z keys."""
+        self._turn = max(TURN_MIN, min(TURN_MAX, value))
+        self.turn_spin.blockSignals(True)
+        self.turn_spin.setValue(self._turn)
+        self.turn_spin.blockSignals(False)
 
     def keyReleaseEvent(self, event):
         # Steering self-centers: releasing the angular key that's
