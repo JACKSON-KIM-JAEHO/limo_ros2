@@ -26,8 +26,8 @@ ros2 launch limo_car ackermann_sim.launch.py map:=<맵이름>
 ros2 run limo_dashboard dashboard_node
 ```
 
-- **Traffic Light**: 빨강/노랑/초록 버튼 — 누른 색만 켜지고 나머지는 꺼집니다 (`/set_light_properties` 서비스 호출, `traffic_light::pole::<color>_light`를 대상으로 함 — 모든 맵이 신호등 인스턴스 이름을 `traffic_light`로 통일해서 썼기 때문에 어느 맵에서든 동일하게 동작합니다).
-- **Robot Steering**: 선속도/각속도 슬라이더 → `/cmd_vel` 퍼블리시 (20Hz 지속 발행). 마우스를 떼면 슬라이더가 0으로 복귀합니다 (안전을 위해 `rqt_robot_steering`과 동일한 동작). STOP 버튼으로 즉시 정지.
+- **Traffic Light**: 빨강/노랑/초록 버튼 — `/traffic_light/color`에 `std_msgs/String` 발행 (`limo_plugin`의 커스텀 Gazebo 플러그인이 실제 렌즈 색을 바꿈). 상세는 아래 "`traffic_light` — 신호 색 바꾸기" 참고.
+- **Robot Steering**: 선속도/각속도 슬라이더 → `/cmd_vel` 퍼블리시 (20Hz 지속 발행). 슬라이더는 놓아도 값이 유지됩니다 (선속도+각속도를 동시에 유지해야 커브 주행이 되므로 `rqt_robot_steering`의 스프링백 동작은 일부러 안 씀). STOP 버튼으로 즉시 정지.
 - 소스: `limo_dashboard/limo_dashboard/dashboard_node.py`. 패널을 더 추가하려면 `_build_..._group(self)` 메서드를 하나 더 만들고 `_build_ui`의 레이아웃에 추가하면 됩니다.
 
 ## 맵 목록
@@ -69,23 +69,20 @@ ros2 run limo_dashboard dashboard_node
 
 ### `traffic_light` — 신호 색 바꾸기
 
-`libgazebo_ros_properties.so`(ros-humble-gazebo-ros 표준 플러그인, 커스텀 컴파일 불필요)로 신호등의 각 전구(`light`)를 개별 제어합니다.
+**`gazebo_msgs/SetLightProperties` 서비스는 안 씁니다** — 그건 `<light>`(조명)만 바꾸고, 실제로 눈에 보이는 렌즈(`<visual>`)의 재질 색은 안 바뀝니다 (Gazebo Classic이 스폰된 모델의 visual 재질을 바꾸는 공개 API를 제공하지 않음). 처음엔 이걸로 시도했다가 "버튼 눌러도 안 바뀌고 엉뚱한 곳에 색만 비친다"는 문제를 겪었습니다.
+
+대신 **커스텀 Gazebo 모델 플러그인**(`limo_plugin` 패키지, `traffic_light_plugin.cpp`)이 렌즈별 링크(`red_light_link`/`yellow_light_link`/`green_light_link`)의 visual 메시지를 직접 재발행해서 재질을 바꿉니다. 트랙 텍스처를 가져온 SKKUAutoLab 레포의 `traffic_ctrl` 모델 + `plugin_pkg`를 참고해서 만들었습니다 (GPL-2.0).
+
+색 변경은 토픽 발행으로 합니다:
 
 ```bash
-# 빨간불 끄기
-ros2 service call /set_light_properties gazebo_msgs/srv/SetLightProperties \
-  "{light_name: 'traffic_light::pole::red_light', diffuse: {r: 0.05, g: 0.05, b: 0.05, a: 1.0}, attenuation_constant: 0.2}"
-
-# 초록불 켜기
-ros2 service call /set_light_properties gazebo_msgs/srv/SetLightProperties \
-  "{light_name: 'traffic_light::pole::green_light', diffuse: {r: 0.0, g: 1.0, b: 0.0, a: 1.0}, attenuation_constant: 0.2}"
-
-# 노란불 켜기
-ros2 service call /set_light_properties gazebo_msgs/srv/SetLightProperties \
-  "{light_name: 'traffic_light::pole::yellow_light', diffuse: {r: 1.0, g: 0.85, b: 0.0, a: 1.0}, attenuation_constant: 0.2}"
+ros2 topic pub -1 /traffic_light/color std_msgs/msg/String "{data: 'green'}"
+ros2 topic pub -1 /traffic_light/color std_msgs/msg/String "{data: 'yellow'}"
+ros2 topic pub -1 /traffic_light/color std_msgs/msg/String "{data: 'red'}"
+ros2 topic pub -1 /traffic_light/color std_msgs/msg/String "{data: 'off'}"
 ```
 
-`light_name` 형식은 `<모델 인스턴스 이름>::<링크 이름>::<라이트 이름>`입니다 (`traffic_light_world.model`에서 모델을 `<name>traffic_light</name>`로 include했고, 내부 링크 이름은 `pole`). 다른 월드에 두 번째 신호등을 추가하면 인스턴스 이름이 달라지니 그에 맞게 바꿔야 합니다.
+대시보드의 빨강/노랑/초록 버튼도 내부적으로 이 토픽에 발행합니다. 모든 맵이 신호등 인스턴스 이름을 `traffic_light`로 통일해서 썼고, 플러그인이 그 안의 고정된 링크 이름(`red_light_link` 등)을 대상으로 하기 때문에 토픽 이름은 어느 맵에서든 동일합니다 — 단, **월드 하나에 신호등을 2개 이상 넣으면 토픽이 겹쳐서 구분이 안 됩니다** (아직 지원 안 함, 필요하면 `model.sdf`의 `<topic>` 태그로 인스턴스별로 다르게 설정 가능).
 
 기본 상태는 빨간불 켜짐, 노랑/초록은 꺼짐(어두운 회색)입니다.
 
