@@ -7,6 +7,10 @@
       <shadows>0</shadows>
     </scene>
 
+    <plugin name="gazebo_ros_properties" filename="libgazebo_ros_properties.so">
+      <ros/>
+    </plugin>
+
     <include>
       <uri>model://sun</uri>
     </include>
@@ -72,6 +76,13 @@
         </visual>
       </link>
     </model>
+
+    <!-- Ampel neben der Spur (bestätigte Position). -->
+    <include>
+      <uri>model://traffic_light</uri>
+      <name>traffic_light</name>
+      <pose>0.5 -3.55 0 0 0 1.5708</pose>
+    </include>
 
     <physics type="ode">
       <real_time_update_rate>1000.0</real_time_update_rate>

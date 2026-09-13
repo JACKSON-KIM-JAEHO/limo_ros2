@@ -7,6 +7,10 @@
       <shadows>0</shadows>
     </scene>
 
+    <plugin name="gazebo_ros_properties" filename="libgazebo_ros_properties.so">
+      <ros/>
+    </plugin>
+
     <include>
       <uri>model://sun</uri>
     </include>
@@ -47,6 +51,31 @@
             </script>
           </material>
         </visual>
+      </link>
+    </model>
+
+    <!-- Ampel neben der Spur (bestätigte Position). -->
+    <include>
+      <uri>model://traffic_light</uri>
+      <name>traffic_light</name>
+      <pose>0.5 -3.55 0 0 0 1.5708</pose>
+    </include>
+
+    <!-- Hindernisse auf der Strecke (bestätigte Positionen). -->
+    <model name="track_obstacle_1">
+      <static>true</static>
+      <pose>0.4863 -3.2524 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.15 0.15 0.2</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.15 0.15 0.2</size></box></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
+      </link>
+    </model>
+    <model name="track_obstacle_2">
+      <static>true</static>
+      <pose>1.4863 -3.2524 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.15 0.15 0.2</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.15 0.15 0.2</size></box></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
       </link>
     </model>
 

@@ -58,6 +58,24 @@
       <pose>0.5 -3.55 0 0 0 1.5708</pose>
     </include>
 
+    <!-- Hindernisse auf der Strecke (bestätigte Positionen). -->
+    <model name="track_obstacle_1">
+      <static>true</static>
+      <pose>0.4863 -3.2524 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.15 0.15 0.2</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.15 0.15 0.2</size></box></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
+      </link>
+    </model>
+    <model name="track_obstacle_2">
+      <static>true</static>
+      <pose>1.4863 -3.2524 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision"><geometry><box><size>0.15 0.15 0.2</size></box></geometry></collision>
+        <visual name="visual"><geometry><box><size>0.15 0.15 0.2</size></box></geometry><material><script><name>Gazebo/Red</name></script></material></visual>
+      </link>
+    </model>
+
     <physics type="ode">
       <real_time_update_rate>1000.0</real_time_update_rate>
       <max_step_size>0.001</max_step_size>
