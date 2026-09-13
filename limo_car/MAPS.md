@@ -27,7 +27,7 @@ ros2 run limo_dashboard dashboard_node
 ```
 
 - **Traffic Light**: 빨강/노랑/초록 버튼 — `/traffic_light/color`에 `std_msgs/String` 발행 (`limo_plugin`의 커스텀 Gazebo 플러그인이 실제 렌즈 색을 바꿈). 상세는 아래 "`traffic_light` — 신호 색 바꾸기" 참고.
-- **Robot Steering**: "Keyboard Teleop" 토글 버튼 — ON일 때 대시보드 창이 `teleop_twist_keyboard`와 동일한 키(`i`/`,`/`j`/`l`/`u`/`o`/`m`/`.`/`k`, 속도 조절 `q`/`z`/`w`/`x`/`e`/`c`)를 그대로 받아 `/cmd_vel`에 퍼블리시합니다 (20Hz 지속 발행). 별도 터미널에서 `ros2 run teleop_twist_keyboard teleop_twist_keyboard` 실행할 필요 없이 대시보드 창에 포커스만 있으면 됩니다. STOP 버튼으로 즉시 정지.
+- **Robot Steering**: "Keyboard Teleop" 토글 버튼 — ON일 때 대시보드 창이 `teleop_twist_keyboard`와 같은 키(`i`/`,`/`j`/`l`/`k`, 속도 조절 `q`/`z`/`w`/`x`/`e`/`c`)를 받아 `/cmd_vel`에 퍼블리시합니다 (20Hz 지속 발행). **단, `i`/`,`(전진/후진)과 `j`/`l`(좌우 회전)은 서로 독립된 축**이라 `teleop_twist_keyboard` 원본과 달리 `i`를 누른 채로 `j`나 `l`을 눌러도 전진 속도가 0으로 리셋되지 않고 곡선 주행(전진+회전 동시)이 됩니다 (원본의 대각선 전용 키 `u`/`o`/`m`/`.`는 더 이상 없음 — 각 축을 독립적으로 조합하면 되므로 불필요). 별도 터미널에서 `ros2 run teleop_twist_keyboard teleop_twist_keyboard` 실행할 필요 없이 대시보드 창에 포커스만 있으면 됩니다. STOP 버튼으로 즉시 정지.
 - 소스: `limo_dashboard/limo_dashboard/dashboard_node.py`. 패널을 더 추가하려면 `_build_..._group(self)` 메서드를 하나 더 만들고 `_build_ui`의 레이아웃에 추가하면 됩니다.
 
 ## 맵 목록

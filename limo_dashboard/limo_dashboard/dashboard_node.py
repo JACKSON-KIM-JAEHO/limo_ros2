@@ -45,18 +45,15 @@ LIGHT_COLORS = ['red', 'yellow', 'green']
 
 PUBLISH_HZ = 20.0
 
-# Same bindings as teleop_twist_keyboard's moveBindings (non-holonomic
-# subset - LIMO is Ackermann, no strafing): key -> (linear_sign, angular_sign)
-MOVE_BINDINGS = {
-    Qt.Key_I: (1, 0),
-    Qt.Key_O: (1, -1),
-    Qt.Key_J: (0, 1),
-    Qt.Key_L: (0, -1),
-    Qt.Key_U: (1, 1),
-    Qt.Key_Comma: (-1, 0),
-    Qt.Key_Period: (-1, -1),
-    Qt.Key_M: (-1, 1),
-}
+# Same keys as teleop_twist_keyboard, but linear and angular are set
+# independently instead of as fixed combos - teleop_twist_keyboard's
+# own i/j/k/l zero out the other axis (i = pure forward, j = pure
+# turn-in-place), so holding forward and tapping a turn key doesn't
+# curve the path, only u/o/m/. (fixed diagonals) do. Setting each axis
+# on its own key lets "i" (hold forward) + "l" (nudge right) combine
+# into an actual curve.
+LINEAR_KEYS = {Qt.Key_I: 1, Qt.Key_Comma: -1}
+ANGULAR_KEYS = {Qt.Key_J: 1, Qt.Key_L: -1}
 STOP_KEYS = {Qt.Key_K}
 SPEED_STEP = 1.1  # multiply/divide by this, same as teleop_twist_keyboard's 10% (1/1.1 ~= 0.9)
 SPEED_UP_KEYS = {Qt.Key_Q}
@@ -147,7 +144,7 @@ class DashboardWindow(QMainWindow):
 
         layout.addWidget(QLabel(
             'i/,: forward/back   j/l: turn left/right\n'
-            'u/o/m/.: diagonal   k: stop\n'
+            '(hold i, tap j/l to curve - axes are independent)   k: stop\n'
             'q/z: speed ±10%   w/x: linear only   e/c: angular only'
         ))
 
@@ -189,10 +186,10 @@ class DashboardWindow(QMainWindow):
             super().keyPressEvent(event)
             return
         key = event.key()
-        if key in MOVE_BINDINGS:
-            lin_sign, ang_sign = MOVE_BINDINGS[key]
-            self._linear = lin_sign * self._speed
-            self._angular = ang_sign * self._turn
+        if key in LINEAR_KEYS:
+            self._linear = LINEAR_KEYS[key] * self._speed
+        elif key in ANGULAR_KEYS:
+            self._angular = ANGULAR_KEYS[key] * self._turn
         elif key in STOP_KEYS:
             self._linear = 0.0
             self._angular = 0.0
