@@ -32,7 +32,15 @@ def generate_launch_description():
     gazebo_model_path = os.path.join(pkg_path, models_path)
 
     env = os.environ.copy()
-    env['GAZEBO_MODEL_PATH'] = gazebo_model_path + os.pathsep + env.get('GAZEBO_MODEL_PATH', '')
+    # Gazebo only falls back to its compiled-in default model path
+    # (/usr/share/gazebo-11/models, where "ground_plane"/"sun" live) when
+    # GAZEBO_MODEL_PATH is completely unset. Since we set it ourselves for
+    # our own models dir, that fallback never kicks in unless we add the
+    # system path back in explicitly.
+    system_gazebo_models = '/usr/share/gazebo-11/models'
+    env['GAZEBO_MODEL_PATH'] = os.pathsep.join(filter(None, [
+        gazebo_model_path, system_gazebo_models, env.get('GAZEBO_MODEL_PATH', '')
+    ]))
     # gzserver checks models.gazebosim.org on startup ("Getting models
     # from... may take a few seconds") even though our world only needs the
     # local race_track model. That check hangs for a long time in this
@@ -49,11 +57,12 @@ def generate_launch_description():
         arguments=['-d', LaunchConfiguration('rvizconfig')],
     )
 
-    # Startpose auf der Start/Ziel-Linie der Strecke (siehe track-Textur).
-    spawn_x_val = '0.0'
-    spawn_y_val = '0.0'
-    spawn_z_val = '0.0'
-    spawn_yaw_val = '0.0'
+    # Startpose auf der "Start"-Linie, visuell in Gazebo bestätigt (per
+    # /tf odom->base_footprint abgelesen und hier übernommen).
+    spawn_x_val = '-0.5137'
+    spawn_y_val = '-3.2524'
+    spawn_z_val = '0.05'
+    spawn_yaw_val = '0.0066'
 
     mbot = IncludeLaunchDescription(
         PythonLaunchDescriptionSource([os.path.join(

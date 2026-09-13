@@ -1,0 +1,97 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+
+    <!-- IMU-Übung: eine Rampe rauf/runter, danach zwei Bodenschwellen.
+         Alles entlang +X, damit die Startpose (yaw=0) direkt draufzu
+         fährt. Rampenwinkel ~11° (steig genug für sichtbaren
+         Pitch-Ausschlag, flach genug dass LIMO nicht durchdreht). -->
+
+    <!-- Rampe hoch: 1.5m lang, steigt auf 0.3m Höhe (~11°) -->
+    <model name="ramp_up">
+      <static>true</static>
+      <pose>2.0 0 0.075 0 -0.1974 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.5 1.0 0.03</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.5 1.0 0.03</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Plateau oben, 0.3m hoch -->
+    <model name="plateau">
+      <static>true</static>
+      <pose>3.5 0 0.3 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.5 1.0 0.03</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.5 1.0 0.03</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Rampe runter, symmetrisch -->
+    <model name="ramp_down">
+      <static>true</static>
+      <pose>5.0 0 0.075 0 0.1974 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>1.5 1.0 0.03</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>1.5 1.0 0.03</size></box></geometry>
+          <material><script><name>Gazebo/Grey</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- Zwei niedrige Bodenschwellen weiter hinten (kurzer Ruck statt
+         dauerhafter Neigung - anderes IMU-Signal als die Rampe). -->
+    <model name="bump_1">
+      <static>true</static>
+      <pose>7.0 0 0.025 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.1 1.0 0.05</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 1.0 0.05</size></box></geometry>
+          <material><script><name>Gazebo/Yellow</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="bump_2">
+      <static>true</static>
+      <pose>7.5 0 0.025 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.1 1.0 0.05</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.1 1.0 0.05</size></box></geometry>
+          <material><script><name>Gazebo/Yellow</name></script></material>
+        </visual>
+      </link>
+    </model>
+  </world>
+</sdf>

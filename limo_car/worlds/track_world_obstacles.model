@@ -1,0 +1,82 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="default">
+    <scene>
+      <ambient>0.4 0.4 0.4 1</ambient>
+      <background>0.7 0.7 0.7 1</background>
+      <shadows>0</shadows>
+    </scene>
+
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <!-- Identisch zu track_world.model, siehe dort für Herkunft/Skalierung
+         der Textur. Hier zusätzlich zwei kleine Hindernisse auf der Spur,
+         relativ zur bestätigten Startpose (-0.5137 -3.2524, yaw~0, schaut
+         in +X-Richtung die Gerade entlang). -->
+    <model name="ground">
+      <pose>0 0 0 0 0 1.57</pose>
+      <static>1</static>
+      <link name="ground">
+        <collision name="ground_collision">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>8.25 6.2</size>
+            </plane>
+          </geometry>
+        </collision>
+        <visual name="ground_visual">
+          <geometry>
+            <plane>
+              <normal>0 0 1</normal>
+              <size>8.25 6.2</size>
+            </plane>
+          </geometry>
+          <material>
+            <script>
+              <uri>model://race_track/materials/scripts</uri>
+              <uri>model://race_track/materials/textures</uri>
+              <name>track</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="track_obstacle_1">
+      <static>true</static>
+      <pose>0.4863 -3.2524 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.15 0.15 0.2</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.15 0.15 0.2</size></box></geometry>
+          <material><script><name>Gazebo/Red</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <model name="track_obstacle_2">
+      <static>true</static>
+      <pose>1.4863 -3.2524 0.1 0 0 0</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry><box><size>0.15 0.15 0.2</size></box></geometry>
+        </collision>
+        <visual name="visual">
+          <geometry><box><size>0.15 0.15 0.2</size></box></geometry>
+          <material><script><name>Gazebo/Red</name></script></material>
+        </visual>
+      </link>
+    </model>
+
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+  </world>
+</sdf>

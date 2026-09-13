@@ -1,0 +1,103 @@
+<?xml version="1.0" ?>
+<sdf version="1.6">
+  <world name="default">
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+    <physics type="ode">
+      <real_time_update_rate>1000.0</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+      <real_time_factor>1</real_time_factor>
+    </physics>
+
+    <!-- Unregelmäßiges Gebäude statt Raster-Labyrinth: eine L-förmige
+         Halle plus zwei Räume unterschiedlicher Größe, verbunden durch
+         einen schmalen Flur. Für SLAM-Kartenqualität interessanter als
+         ein perfektes Raster (echte Gebäude haben selten rechte Winkel
+         überall bzw. gleich große Räume). Wandstärke 0.06m, Höhe 0.3m,
+         Türöffnungen ~0.9m breit (>> LIMO Wendekreis ~0.83m). -->
+
+    <!-- Raum 1: 4m x 3m, Ecke unten links bei (0,0) -->
+    <!-- Südwand mit Türlücke bei x=1.5..2.4 -->
+    <model name="r1_wall_s1"><static>true</static><pose>0.75 0 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>1.5 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>1.5 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <model name="r1_wall_s2"><static>true</static><pose>3.2 0 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>1.6 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>1.6 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <!-- Nordwand durchgehend -->
+    <model name="r1_wall_n"><static>true</static><pose>2.0 3.0 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>4.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>4.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <!-- Westwand -->
+    <model name="r1_wall_w"><static>true</static><pose>0 1.5 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>3.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>3.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <!-- Ostwand von Raum1 mit Türlücke bei y=1.0..1.9 (Verbindung zum Flur) -->
+    <model name="r1_wall_e1"><static>true</static><pose>4.0 0.5 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>1.0 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>1.0 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <model name="r1_wall_e2"><static>true</static><pose>4.0 2.45 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>1.1 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>1.1 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+
+    <!-- Flur: schmaler Gang von Raum1 (x=4) nach Osten zu Raum2 (x=7),
+         ~1m breit, entlang y=1.0..1.9 -->
+    <model name="hall_wall_s"><static>true</static><pose>5.5 1.0 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>3.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>3.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <model name="hall_wall_n"><static>true</static><pose>5.5 1.9 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>3.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>3.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+
+    <!-- Raum 2: größerer 5m x 5m Raum, Ecke unten links bei (7,-1) -->
+    <model name="r2_wall_s"><static>true</static><pose>9.5 -1.0 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>5.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>5.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <model name="r2_wall_n"><static>true</static><pose>9.5 4.0 0.15 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>5.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>5.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <model name="r2_wall_e"><static>true</static><pose>12.0 1.5 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>5.06 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>5.06 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <!-- Raum2 Westwand mit Türlücke bei y=1.0..1.9 (Anschluss an Flur) -->
+    <model name="r2_wall_w1"><static>true</static><pose>7.0 -0.5 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>1.0 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>1.0 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+    <model name="r2_wall_w2"><static>true</static><pose>7.0 2.95 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>2.1 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>2.1 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
+
+    <!-- Ein paar "Möbel"-artige Hindernisse in Raum2 für realistischeres
+         SLAM (echte Räume sind nicht leer). -->
+    <model name="furniture_1"><static>true</static><pose>8.5 0.5 0.2 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>0.5 0.3 0.4</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.5 0.3 0.4</size></box></geometry><material><script><name>Gazebo/Blue</name></script></material></visual></link>
+    </model>
+    <model name="furniture_2"><static>true</static><pose>10.5 2.5 0.15 0 0 0.4</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>0.6 0.4 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>0.6 0.4 0.3</size></box></geometry><material><script><name>Gazebo/Blue</name></script></material></visual></link>
+    </model>
+    <model name="furniture_3"><static>true</static><pose>11.0 -0.3 0.1 0 0 0</pose>
+      <link name="link"><collision name="collision"><geometry><cylinder><radius>0.2</radius><length>0.2</length></cylinder></geometry></collision>
+      <visual name="visual"><geometry><cylinder><radius>0.2</radius><length>0.2</length></cylinder></geometry><material><script><name>Gazebo/Blue</name></script></material></visual></link>
+    </model>
+  </world>
+</sdf>
