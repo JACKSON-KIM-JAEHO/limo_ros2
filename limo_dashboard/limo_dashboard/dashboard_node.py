@@ -1,9 +1,9 @@
 """Single-window Qt dashboard for the LIMO sim.
 
-Combines traffic light color control and robot steering (equivalent to
-`ros2 run rqt_robot_steering rqt_robot_steering`, publishing
-geometry_msgs/Twist on /cmd_vel) into one window, launched alongside
-the simulator.
+Combines traffic light color control and robot steering (a toggle-able
+in-window equivalent of `ros2 run teleop_twist_keyboard
+teleop_twist_keyboard`, publishing geometry_msgs/Twist on /cmd_vel)
+into one window, launched alongside the simulator.
 
 Traffic light color is set by publishing std_msgs/String ("red" |
 "yellow" | "green" | "off") on /traffic_light/color, read by the
@@ -14,6 +14,14 @@ public API to change a spawned model's <visual> material, which is
 what actually makes a lens sphere look colored. See
 limo_plugin/src/traffic_light_plugin.cpp for why a custom plugin is
 needed here.
+
+Steering used to be sliders, but releasing one to adjust the other
+zeroed it out, making it impossible to hold a simultaneous
+linear+angular command for a curve. Replaced with the actual
+teleop_twist_keyboard key bindings (i/j/k/l/u/o/m/,/./q/z/w/x/e/c)
+captured directly in this window instead of a separate terminal, toggled
+on/off with a button so normal typing/clicking elsewhere isn't
+accidentally read as a drive command.
 
 To add a new panel later: write a `_build_..._group(self) -> QGroupBox`
 method and add it to the QVBoxLayout in `_build_ui`.
@@ -30,14 +38,33 @@ from std_msgs.msg import String
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout,
-    QGroupBox, QPushButton, QSlider, QLabel,
+    QGroupBox, QPushButton, QLabel,
 )
 
 LIGHT_COLORS = ['red', 'yellow', 'green']
 
-MAX_LINEAR = 1.0    # m/s
-MAX_ANGULAR = 3.0   # rad/s
 PUBLISH_HZ = 20.0
+
+# Same bindings as teleop_twist_keyboard's moveBindings (non-holonomic
+# subset - LIMO is Ackermann, no strafing): key -> (linear_sign, angular_sign)
+MOVE_BINDINGS = {
+    Qt.Key_I: (1, 0),
+    Qt.Key_O: (1, -1),
+    Qt.Key_J: (0, 1),
+    Qt.Key_L: (0, -1),
+    Qt.Key_U: (1, 1),
+    Qt.Key_Comma: (-1, 0),
+    Qt.Key_Period: (-1, -1),
+    Qt.Key_M: (-1, 1),
+}
+STOP_KEYS = {Qt.Key_K}
+SPEED_STEP = 1.1  # multiply/divide by this, same as teleop_twist_keyboard's 10% (1/1.1 ~= 0.9)
+SPEED_UP_KEYS = {Qt.Key_Q}
+SPEED_DOWN_KEYS = {Qt.Key_Z}
+LINEAR_UP_KEYS = {Qt.Key_W}
+LINEAR_DOWN_KEYS = {Qt.Key_X}
+ANGULAR_UP_KEYS = {Qt.Key_E}
+ANGULAR_DOWN_KEYS = {Qt.Key_C}
 
 
 class DashboardNode(Node):
@@ -64,13 +91,19 @@ class DashboardWindow(QMainWindow):
         super().__init__()
         self.ros_node = ros_node
         self.setWindowTitle('LIMO Dashboard')
-        self._build_ui()
 
-        # rqt_robot_steering-style: keep publishing the current slider
-        # value at a fixed rate, not just on change, so the robot keeps
-        # moving while a slider is held away from zero.
+        self._teleop_active = False
         self._linear = 0.0
         self._angular = 0.0
+        self._speed = 0.5   # m/s, teleop_twist_keyboard's default
+        self._turn = 1.0    # rad/s, teleop_twist_keyboard's default
+
+        self._build_ui()
+        self.setFocusPolicy(Qt.StrongFocus)
+
+        # Keep publishing the current command at a fixed rate, not just
+        # on key press, so the robot keeps moving until the next key
+        # (matching teleop_twist_keyboard's own behavior).
         self._cmd_timer = QTimer(self)
         self._cmd_timer.timeout.connect(self._publish_cmd_vel)
         self._cmd_timer.start(int(1000 / PUBLISH_HZ))
@@ -103,26 +136,25 @@ class DashboardWindow(QMainWindow):
         self.ros_node.set_light(active_color)
 
     def _build_steering_group(self) -> QGroupBox:
-        group = QGroupBox('Robot Steering (cmd_vel)')
+        group = QGroupBox('Robot Steering (keyboard teleop)')
         layout = QVBoxLayout()
 
-        layout.addWidget(QLabel('Linear (m/s)'))
-        self.linear_slider = QSlider(Qt.Horizontal)
-        self.linear_slider.setRange(-100, 100)
-        self.linear_slider.setValue(0)
-        self.linear_slider.valueChanged.connect(self._on_linear_changed)
-        layout.addWidget(self.linear_slider)
-        self.linear_label = QLabel('0.00 m/s')
-        layout.addWidget(self.linear_label)
+        self.teleop_btn = QPushButton('Keyboard Teleop: OFF')
+        self.teleop_btn.setCheckable(True)
+        self._style_teleop_button()
+        self.teleop_btn.clicked.connect(self._toggle_teleop)
+        layout.addWidget(self.teleop_btn)
 
-        layout.addWidget(QLabel('Angular (rad/s)'))
-        self.angular_slider = QSlider(Qt.Horizontal)
-        self.angular_slider.setRange(-100, 100)
-        self.angular_slider.setValue(0)
-        self.angular_slider.valueChanged.connect(self._on_angular_changed)
-        layout.addWidget(self.angular_slider)
-        self.angular_label = QLabel('0.00 rad/s')
-        layout.addWidget(self.angular_label)
+        layout.addWidget(QLabel(
+            'i/,: forward/back   j/l: turn left/right\n'
+            'u/o/m/.: diagonal   k: stop\n'
+            'q/z: speed ±10%   w/x: linear only   e/c: angular only'
+        ))
+
+        self.speed_label = QLabel(f'speed {self._speed:.2f} m/s  turn {self._turn:.2f} rad/s')
+        layout.addWidget(self.speed_label)
+        self.cmd_label = QLabel('linear 0.00 m/s  angular 0.00 rad/s')
+        layout.addWidget(self.cmd_label)
 
         stop_btn = QPushButton('STOP')
         stop_btn.setStyleSheet('background-color: #d62728; color: white; font-weight: bold; padding: 10px;')
@@ -132,23 +164,65 @@ class DashboardWindow(QMainWindow):
         group.setLayout(layout)
         return group
 
-    def _on_linear_changed(self, value):
-        self._linear = (value / 100.0) * MAX_LINEAR
-        self.linear_label.setText(f'{self._linear:.2f} m/s')
+    def _style_teleop_button(self):
+        if self._teleop_active:
+            self.teleop_btn.setText('Keyboard Teleop: ON')
+            self.teleop_btn.setStyleSheet(
+                'background-color: #2ca02c; color: white; font-weight: bold; padding: 10px;')
+        else:
+            self.teleop_btn.setText('Keyboard Teleop: OFF')
+            self.teleop_btn.setStyleSheet(
+                'background-color: #888888; color: white; font-weight: bold; padding: 10px;')
 
-    def _on_angular_changed(self, value):
-        # Slider right (+) should turn the robot right, which is a
-        # negative angular.z in the standard ROS convention (+z is
-        # counter-clockwise/left) - negate so slider direction matches
-        # turn direction.
-        self._angular = -(value / 100.0) * MAX_ANGULAR
-        self.angular_label.setText(f'{self._angular:.2f} rad/s')
+    def _toggle_teleop(self):
+        self._teleop_active = not self._teleop_active
+        self._style_teleop_button()
+        if self._teleop_active:
+            self.setFocus()  # so key presses reach keyPressEvent below
+        else:
+            self._linear = 0.0
+            self._angular = 0.0
+            self._update_cmd_label()
+
+    def keyPressEvent(self, event):
+        if not self._teleop_active or event.isAutoRepeat():
+            super().keyPressEvent(event)
+            return
+        key = event.key()
+        if key in MOVE_BINDINGS:
+            lin_sign, ang_sign = MOVE_BINDINGS[key]
+            self._linear = lin_sign * self._speed
+            self._angular = ang_sign * self._turn
+        elif key in STOP_KEYS:
+            self._linear = 0.0
+            self._angular = 0.0
+        elif key in SPEED_UP_KEYS:
+            self._speed *= SPEED_STEP
+            self._turn *= SPEED_STEP
+        elif key in SPEED_DOWN_KEYS:
+            self._speed /= SPEED_STEP
+            self._turn /= SPEED_STEP
+        elif key in LINEAR_UP_KEYS:
+            self._speed *= SPEED_STEP
+        elif key in LINEAR_DOWN_KEYS:
+            self._speed /= SPEED_STEP
+        elif key in ANGULAR_UP_KEYS:
+            self._turn *= SPEED_STEP
+        elif key in ANGULAR_DOWN_KEYS:
+            self._turn /= SPEED_STEP
+        else:
+            super().keyPressEvent(event)
+            return
+        self.speed_label.setText(f'speed {self._speed:.2f} m/s  turn {self._turn:.2f} rad/s')
+        self._update_cmd_label()
+
+    def _update_cmd_label(self):
+        self.cmd_label.setText(f'linear {self._linear:.2f} m/s  angular {self._angular:.2f} rad/s')
 
     def _stop(self):
-        self.linear_slider.setValue(0)
-        self.angular_slider.setValue(0)
         self._linear = 0.0
         self._angular = 0.0
+        self._update_cmd_label()
         self.ros_node.publish_cmd_vel(0.0, 0.0)
 
     def _publish_cmd_vel(self):

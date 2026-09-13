@@ -27,7 +27,7 @@ ros2 run limo_dashboard dashboard_node
 ```
 
 - **Traffic Light**: 빨강/노랑/초록 버튼 — `/traffic_light/color`에 `std_msgs/String` 발행 (`limo_plugin`의 커스텀 Gazebo 플러그인이 실제 렌즈 색을 바꿈). 상세는 아래 "`traffic_light` — 신호 색 바꾸기" 참고.
-- **Robot Steering**: 선속도/각속도 슬라이더 → `/cmd_vel` 퍼블리시 (20Hz 지속 발행). 슬라이더는 놓아도 값이 유지됩니다 (선속도+각속도를 동시에 유지해야 커브 주행이 되므로 `rqt_robot_steering`의 스프링백 동작은 일부러 안 씀). STOP 버튼으로 즉시 정지.
+- **Robot Steering**: "Keyboard Teleop" 토글 버튼 — ON일 때 대시보드 창이 `teleop_twist_keyboard`와 동일한 키(`i`/`,`/`j`/`l`/`u`/`o`/`m`/`.`/`k`, 속도 조절 `q`/`z`/`w`/`x`/`e`/`c`)를 그대로 받아 `/cmd_vel`에 퍼블리시합니다 (20Hz 지속 발행). 별도 터미널에서 `ros2 run teleop_twist_keyboard teleop_twist_keyboard` 실행할 필요 없이 대시보드 창에 포커스만 있으면 됩니다. STOP 버튼으로 즉시 정지.
 - 소스: `limo_dashboard/limo_dashboard/dashboard_node.py`. 패널을 더 추가하려면 `_build_..._group(self)` 메서드를 하나 더 만들고 `_build_ui`의 레이아웃에 추가하면 됩니다.
 
 ## 맵 목록
