@@ -106,8 +106,11 @@ Es würde einfach in andere Datei angerufen werden. -->
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="$(find limo_car)/meshes/limo_wheel.dae" scale="1.2 1.2 1.2"/>
+                    <mesh filename="$(find limo_car)/meshes/limo_wheel_lean.stl" scale="1.2 1.2 1.2"/>
                 </geometry>
+                <material name="wheel_black">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
             </visual>
             <collision>
                 <origin xyz="0 ${wheel_length/2} 0" rpy="${M_PI/2} 0 0" />
@@ -117,6 +120,10 @@ Es würde einfach in andere Datei angerufen werden. -->
             </collision>
             <xacro:cylinder_inertial_matrix  m="${wheel_mass}" r="${wheel_radius}"  h="${wheel_length}" />
         </link>
+
+        <gazebo reference="${wheel_prefix}_wheel_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
 
         <joint name="${wheel_prefix}_wheel_joint" type="continuous">
             <parent link="${wheel_prefix}_steer_link"/>
@@ -184,8 +191,11 @@ Es würde einfach in andere Datei angerufen werden. -->
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="$(find limo_car)/meshes/limo_wheel.dae" scale="1.2 1.2 1.2" />
+                    <mesh filename="$(find limo_car)/meshes/limo_wheel_lean.stl" scale="1.2 1.2 1.2" />
                 </geometry>
+                <material name="wheel_black">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
             </visual>
             <collision>
                 <origin xyz="0 ${wheel_length/2} 0" rpy="${M_PI/2} 0 0" />
@@ -195,6 +205,10 @@ Es würde einfach in andere Datei angerufen werden. -->
             </collision>
             <xacro:cylinder_inertial_matrix  m="${wheel_mass}" r="${wheel_radius}"  h="${wheel_length}" />
         </link>
+
+        <gazebo reference="${wheel_prefix}_wheel_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
 
         <joint name="${wheel_prefix}_wheel_joint" type="continuous">
             <parent link="${wheel_prefix}_steer_link"/>
@@ -234,13 +248,19 @@ Es würde einfach in andere Datei angerufen werden. -->
         </joint>
 
         <!-- herstellt base_link -->
+        <!-- Leichtgewichtige Version: limo_base.dae bestand aus 1619
+             einzelnen Sub-Meshes (755K Faces), was zu massivem Ruckeln
+             führte (viele Draw-Calls). Hier zu einem Mesh verschmolzen und
+             dezimiert (~98K Faces), einfarbig. -->
         <link name="base_link">
             <visual>
                 <origin xyz="0 0 -0.15" rpy="0 0 ${M_PI/2}" />
                 <geometry>
-                    <!-- Modell von Hersteller, aber es ist kleiner als realen Produkt, da die Skale vergrößert wird -->
-                    <mesh filename="$(find limo_car)/meshes/limo_base.dae" scale="1.2 1.2 1.2" />
+                    <mesh filename="$(find limo_car)/meshes/limo_base_lean.stl" scale="1.2 1.2 1.2" />
                 </geometry>
+                <material name="body_white">
+                    <color rgba="0.9 0.9 0.9 1"/>
+                </material>
             </visual>
             <!-- Modell für physikalische Kollision zu modellieren. -->
             <collision>
@@ -253,18 +273,20 @@ Es würde einfach in andere Datei angerufen werden. -->
         </link>
 
         <gazebo reference="base_link">
-            <material>
-                <color rgba="0 0 0 0.5"/>
-            </material>
+            <material>Gazebo/Grey</material>
         </gazebo>
+
 
         <!-- hinten Räder -->
         <link name="rear_left_wheel_link">
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="$(find limo_car)/meshes/limo_wheel.dae" scale="1.2 1.2 1.2"/>
+                    <mesh filename="$(find limo_car)/meshes/limo_wheel_lean.stl" scale="1.2 1.2 1.2"/>
                 </geometry>
+                <material name="wheel_black">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
             </visual>
             <collision>
                 <origin xyz="0 ${wheel_length/2} 0" rpy="${M_PI/2} 0 0" />
@@ -274,6 +296,10 @@ Es würde einfach in andere Datei angerufen werden. -->
             </collision>
             <xacro:cylinder_inertial_matrix  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
         </link>
+
+        <gazebo reference="rear_left_wheel_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
 
         <joint name="rear_left_wheel_joint" type="continuous">
             <parent link="base_link"/>
@@ -297,8 +323,11 @@ Es würde einfach in andere Datei angerufen werden. -->
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0" />
                 <geometry>
-                    <mesh filename="$(find limo_car)/meshes/limo_wheel.dae" scale="1.2 1.2 1.2"/>
+                    <mesh filename="$(find limo_car)/meshes/limo_wheel_lean.stl" scale="1.2 1.2 1.2"/>
                 </geometry>
+                <material name="wheel_black">
+                    <color rgba="0.1 0.1 0.1 1"/>
+                </material>
             </visual>
             <collision>
                 <origin xyz="0 ${wheel_length/2} 0" rpy="${M_PI/2} 0 0" />
@@ -308,6 +337,10 @@ Es würde einfach in andere Datei angerufen werden. -->
             </collision>
             <xacro:cylinder_inertial_matrix  m="${wheel_mass}" r="${wheel_radius}" h="${wheel_length}"/>
         </link>
+
+        <gazebo reference="rear_right_wheel_link">
+            <material>Gazebo/Black</material>
+        </gazebo>
 
         <joint name="rear_right_wheel_joint" type="continuous">
             <parent link="base_link"/>

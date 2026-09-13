@@ -53,12 +53,20 @@ def generate_launch_description():
         )]), launch_arguments={'use_sim_time': 'true', 'world': world_path}.items()
     )
 
-    # Nur gzserver aus dem gazebo_ros-Paket einbinden. gzclient wird unten
-    # separat gestartet (ohne das "eol_gui"-Plugin, siehe Kommentar dort).
-    gazebo_server = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource([os.path.join(
-            get_package_share_directory('gazebo_ros'), 'launch', 'gzserver.launch.py')]),
-        launch_arguments={'world': world_path}.items()
+    # gzserver läuft unter xvfb-run (virtuelles X-Display), da die depth
+    # camera sonst mit einer rendering::Scene-Assertion abstürzt, sobald ein
+    # Modell mit Kamera-Sensor gespawnt wird - unabhängig von Session
+    # (X11/Wayland) oder Treiber (Software/NVIDIA). gzclient läuft weiterhin
+    # auf dem echten Display (unten), nur der Server braucht das virtuelle.
+    gazebo_server = ExecuteProcess(
+        cmd=[
+            'xvfb-run', '-a',
+            'gzserver', world_path,
+            '-slibgazebo_ros_init.so',
+            '-slibgazebo_ros_factory.so',
+            '-slibgazebo_ros_force_system.so',
+        ],
+        output='screen',
     )
 
     # gazebo_ros/launch/gzclient.launch.py hängt fest "--gui-client-plugin=
