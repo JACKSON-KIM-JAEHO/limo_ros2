@@ -80,6 +80,12 @@
       <link name="link"><collision name="collision"><geometry><box><size>1.0 0.06 0.3</size></box></geometry></collision>
       <visual name="visual"><geometry><box><size>1.0 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
     </model>
+    <!-- Fehlendes Segment y=0.0..1.0: ohne dieses Stück war die Westwand
+         bis zur Türlücke y=1.0..1.9 komplett offen statt nur 0.9m breit. -->
+    <model name="r2_wall_w0"><static>true</static><pose>7.0 0.5 0.15 0 0 1.5708</pose>
+      <link name="link"><collision name="collision"><geometry><box><size>1.0 0.06 0.3</size></box></geometry></collision>
+      <visual name="visual"><geometry><box><size>1.0 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
+    </model>
     <model name="r2_wall_w2"><static>true</static><pose>7.0 2.95 0.15 0 0 1.5708</pose>
       <link name="link"><collision name="collision"><geometry><box><size>2.1 0.06 0.3</size></box></geometry></collision>
       <visual name="visual"><geometry><box><size>2.1 0.06 0.3</size></box></geometry><material><script><name>Gazebo/Wood</name></script></material></visual></link>
