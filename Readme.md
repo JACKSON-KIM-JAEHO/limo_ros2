@@ -67,6 +67,21 @@ Start the keyboard teleop node
 ros2 run teleop_twist_keyboard teleop_twist_keyboard
 ```
 
+## 커리큘럼 시뮬레이션 맵 (LIMO Gazebo)
+
+원본 패키지에 없던 맵 10종(직선 주행, 레이싱 트랙, 신호등, 장애물, 미로, 경사로, 주차 등)과
+이를 한 번에 켜는 통합 launch 파일, 신호등/조향 대시보드가 `limo_car` 패키지에 추가되어 있습니다.
+
+```bash
+cd ~/nova_ws
+source install/setup.bash
+ros2 launch limo_car ackermann_sim.launch.py map:=<맵이름>
+```
+
+`map` 인자를 생략하면 기본값은 `track`입니다. 전체 맵 목록, 스폰 좌표, 신호등 색 변경법,
+대시보드(Keyboard Teleop, Max speed/turn, 신호등 버튼) 사용법은
+[`limo_car/MAPS.md`](limo_car/MAPS.md)에 정리되어 있습니다.
+
 # statement
 
 The limo_car gazebo simulation function package is provided by us and the Institute for **Intermodal Transport and Logistics SystemsTU Braunschweig, Germany **jointly developed, thanks for their efforts

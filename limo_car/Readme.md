@@ -146,6 +146,17 @@ ros2 launch limo_car ackermann_gazebo.launch.py
 ros2 run rqt_robot_steering rqt_robot_steering
 ```
 
+### 4. 커리큘럼 맵으로 실행하기 (신호등/장애물/미로 등)
+
+위 `ackermann_gazebo.launch.py` 대신, 아래 통합 launch로 실행하면 맵 10종 중 하나를 골라
+로봇 스폰 + gzserver/gzclient + RViz + 신호등/조향 대시보드까지 한 번에 뜹니다:
+
+```
+ros2 launch limo_car ackermann_sim.launch.py map:=<맵이름>
+```
+
+맵 목록, 스폰 좌표, 신호등 색 변경 방법, 대시보드 사용법은 [`MAPS.md`](MAPS.md) 참고.
+
 
 Author: Zhui Li
 email: lz554113510@gmail.com
