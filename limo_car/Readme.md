@@ -155,7 +155,22 @@ ros2 run rqt_robot_steering rqt_robot_steering
 ros2 launch limo_car ackermann_sim.launch.py map:=<맵이름>
 ```
 
-맵 목록, 스폰 좌표, 신호등 색 변경 방법, 대시보드 사용법은 [`MAPS.md`](MAPS.md) 참고.
+`map:=` 에 넣을 수 있는 값 (생략 시 기본값 `track`):
+
+| 값 | 내용 |
+|---|---|
+| `empty` | 빈 월드 + 박스 장애물 3개 (최초 동작 확인용) |
+| `straight_line` | 8m 직선 코스 + 신호등 1개 + 장애물 1개 |
+| `track` | 레이싱 트랙 + 신호등 1개 + 장애물 2개 (기본값) |
+| `track_obstacles` | `track`과 동일 구성 (변형용 별칭) |
+| `maze` | 10x10 절차적 생성 미로, SLAM/미로 탈출 미션 |
+| `ramp` | 경사로(오르막→평지→내리막) + 과속방지턱 2개 |
+| `room` | 비정형 건물(방 2개 + 좁은 복도), SLAM 지도 비교용 |
+| `parking` | `track` 바닥 + 주차 목표 구역 2개 |
+| `traffic_light` | `track` 바닥 + 신호등 1개 + 장애물 2개 |
+| `integration` | 트랙 + 신호등 + 장애물 2개 + 주차 구역 2개 종합 |
+
+스폰 좌표, 신호등 색 변경 방법, 대시보드 사용법 등 상세 내용은 [`MAPS.md`](MAPS.md) 참고.
 
 
 Author: Zhui Li
