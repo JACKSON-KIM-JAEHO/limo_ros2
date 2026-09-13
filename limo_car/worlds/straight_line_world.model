@@ -52,7 +52,7 @@
 
     <!-- Ampel am Korridorrand, kurz vor dem Hindernis. -->
     <model name="traffic_light">
-      <pose>1.0 0.45 0 0 0 1.5708</pose>
+      <pose>-2.467488 0.439599 -0.772901 0 0 -1.291641</pose>
     <static>true</static>
 
     <!-- Pole + housing. Separate from the lens links below so the

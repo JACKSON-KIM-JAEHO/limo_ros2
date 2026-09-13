@@ -46,7 +46,7 @@ ros2 run limo_dashboard dashboard_node
 | `traffic_light` | `track` 바닥 + 신호등 1개 + 장애물 2개 | (-0.51, -3.25, 0°) | 신호 인식/정지출발 연습, 색 변경법 아래 참고 |
 | `integration` | 트랙 + 신호등 + 장애물 2개 + 주차 구역 2개 종합 | (-0.51, -3.25, 0°) | Phase 8 통합 프로젝트용 |
 
-신호등과 장애물 위치는 확정되어 `track`, `track_obstacles`, `traffic_light`, `straight_line`, `maze` 다섯 맵에 공통 적용돼 있습니다 (같은 `<pose>` 값 재사용). `ramp`/`room`/`parking`/`integration`은 성격상 제외했거나(`ramp`, `room`) 이미 포함되어 있습니다(`integration`).
+신호등과 장애물 위치는 각 맵에 신호등 모델이 포함되어 있는 `track`, `track_obstacles`, `traffic_light`, `straight_line`, `maze` 다섯 맵에 확정 배치돼 있습니다. `track`/`track_obstacles`/`traffic_light`/`integration` 네 맵은 같은 `<pose>` 값을 공유하지만, `straight_line`과 `maze`는 코스 형태가 달라 각자 다른 신호등 `<pose>`를 씁니다 (Gazebo GUI에서 직접 드래그해 잡은 값). `ramp`/`room`/`parking`은 성격상 신호등을 넣지 않았습니다.
 
 ## 맵별 상세
 
