@@ -37,7 +37,8 @@ sudo apt-get install ros-humble-joint-state-publisher-gui
 Download and install rqt-robot-steering plug-in, rqt_robot_steering is a ROS tool closely related to robot motion control, it can send the control command of robot linear motion and steering motion, and the robot motion can be easily controlled through the sliding bar
 
 ```
-sudo apt-get install ros-humble-rqt-robot-steering 
+sudo apt-get update
+sudo apt-get install ros-humble-rqt-robot-steering
 ```
 
 Download and install teleop-twist-keyboard
@@ -45,10 +46,10 @@ Download and install teleop-twist-keyboard
 ###  Download package and Build
 
 ```
-mkdir -p catkin_ws/src
-cd catkin_ws/src
-git clone https://github.com/agilexrobotics/limo_ros2.git
-cd catkin_ws
+mkdir -p nova_ws/src
+cd nova_ws/src
+git clone https://github.com/JACKSON-KIM-JAEHO/limo_ros2.git
+cd ~/nova_ws
 colcon build
 ```
 
