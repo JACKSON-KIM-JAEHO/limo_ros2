@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
+<package format="3">
+  <name>limo_plugin</name>
+  <version>0.0.1</version>
+  <description>Gazebo model plugin that changes traffic light lens colors at runtime via a ROS topic (SetLightProperties only affects illumination, not visual material - see src/traffic_light_plugin.cpp). Adapted from SKKUAutoLab/H-Mobility-Autonomous-Advanced-Course-Simulation (GPL-2.0).</description>
+  <maintainer email="woghjaeho1@gmail.com">jaeho</maintainer>
+  <license>GPL-2.0-or-later</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>gazebo_dev</depend>
+  <depend>gazebo_ros</depend>
+  <depend>rclcpp</depend>
+  <depend>std_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+    <gazebo_ros gazebo_plugin_path="${prefix}/lib"/>
+  </export>
+</package>

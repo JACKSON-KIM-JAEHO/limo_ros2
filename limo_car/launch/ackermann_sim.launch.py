@@ -74,6 +74,12 @@ def launch_setup(context, *args, **kwargs):
     env['GAZEBO_MODEL_PATH'] = os.pathsep.join(filter(None, [
         gazebo_model_path, system_gazebo_models, env.get('GAZEBO_MODEL_PATH', '')
     ]))
+    # traffic_light model.sdf references libtraffic_light_plugin.so
+    # (limo_plugin package) - needs to be on GAZEBO_PLUGIN_PATH.
+    plugin_lib_path = os.path.join(get_package_share_directory('limo_plugin'), '..', '..', 'lib')
+    env['GAZEBO_PLUGIN_PATH'] = os.pathsep.join(filter(None, [
+        os.path.normpath(plugin_lib_path), env.get('GAZEBO_PLUGIN_PATH', '')
+    ]))
     # gzserver checks models.gazebosim.org on startup ("Getting models
     # from... may take a few seconds"), which hangs for a long time in
     # this environment even for worlds that only need local models.

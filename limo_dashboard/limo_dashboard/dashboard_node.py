@@ -1,11 +1,19 @@
 """Single-window Qt dashboard for the LIMO sim.
 
-Combines traffic light color control (calls the standard
-gazebo_msgs/SetLightProperties service - see limo_car/models/
-traffic_light/model.config for the underlying command) and robot
-steering (equivalent to `ros2 run rqt_robot_steering rqt_robot_steering`,
-publishing geometry_msgs/Twist on /cmd_vel) into one window, launched
-alongside the simulator.
+Combines traffic light color control and robot steering (equivalent to
+`ros2 run rqt_robot_steering rqt_robot_steering`, publishing
+geometry_msgs/Twist on /cmd_vel) into one window, launched alongside
+the simulator.
+
+Traffic light color is set by publishing std_msgs/String ("red" |
+"yellow" | "green" | "off") on /traffic_light/color, read by the
+traffic_light_plugin Gazebo model plugin (limo_plugin package). We
+originally tried the standard gazebo_msgs/SetLightProperties service,
+but that only changes a <light> (illumination) - Gazebo Classic has no
+public API to change a spawned model's <visual> material, which is
+what actually makes a lens sphere look colored. See
+limo_plugin/src/traffic_light_plugin.cpp for why a custom plugin is
+needed here.
 
 To add a new panel later: write a `_build_..._group(self) -> QGroupBox`
 method and add it to the QVBoxLayout in `_build_ui`.
@@ -17,8 +25,7 @@ import threading
 import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from gazebo_msgs.srv import SetLightProperties
-from std_msgs.msg import ColorRGBA
+from std_msgs.msg import String
 
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtWidgets import (
@@ -26,15 +33,7 @@ from PyQt5.QtWidgets import (
     QGroupBox, QPushButton, QSlider, QLabel,
 )
 
-LIGHT_MODEL = 'traffic_light'
-LIGHT_LINK = 'pole'
 LIGHT_COLORS = ['red', 'yellow', 'green']
-LIGHT_ON = {
-    'red': (1.0, 0.0, 0.0),
-    'yellow': (1.0, 0.85, 0.0),
-    'green': (0.0, 1.0, 0.0),
-}
-LIGHT_OFF = (0.05, 0.05, 0.05)
 
 MAX_LINEAR = 1.0    # m/s
 MAX_ANGULAR = 3.0   # rad/s
@@ -42,13 +41,12 @@ PUBLISH_HZ = 20.0
 
 
 class DashboardNode(Node):
-    """Just the ROS I/O side (publisher + service client). No Qt here."""
+    """Just the ROS I/O side (publishers). No Qt here."""
 
     def __init__(self):
         super().__init__('limo_dashboard')
         self.cmd_vel_pub = self.create_publisher(Twist, '/cmd_vel', 10)
-        self.light_client = self.create_client(
-            SetLightProperties, '/set_light_properties')
+        self.light_pub = self.create_publisher(String, '/traffic_light/color', 10)
 
     def publish_cmd_vel(self, linear, angular):
         msg = Twist()
@@ -56,17 +54,8 @@ class DashboardNode(Node):
         msg.angular.z = angular
         self.cmd_vel_pub.publish(msg)
 
-    def set_light(self, color, on):
-        if not self.light_client.service_is_ready():
-            return
-        r, g, b = LIGHT_ON[color] if on else LIGHT_OFF
-        req = SetLightProperties.Request()
-        req.light_name = f'{LIGHT_MODEL}::{LIGHT_LINK}::{color}_light'
-        req.diffuse = ColorRGBA(r=r, g=g, b=b, a=1.0)
-        req.attenuation_constant = 0.2
-        req.attenuation_linear = 0.3
-        req.attenuation_quadratic = 0.0
-        self.light_client.call_async(req)
+    def set_light(self, color):
+        self.light_pub.publish(String(data=color))
 
 
 class DashboardWindow(QMainWindow):
@@ -111,8 +100,7 @@ class DashboardWindow(QMainWindow):
         return group
 
     def _set_traffic_light(self, active_color):
-        for color in LIGHT_COLORS:
-            self.ros_node.set_light(color, on=(color == active_color))
+        self.ros_node.set_light(active_color)
 
     def _build_steering_group(self) -> QGroupBox:
         group = QGroupBox('Robot Steering (cmd_vel)')
@@ -123,7 +111,6 @@ class DashboardWindow(QMainWindow):
         self.linear_slider.setRange(-100, 100)
         self.linear_slider.setValue(0)
         self.linear_slider.valueChanged.connect(self._on_linear_changed)
-        self.linear_slider.sliderReleased.connect(lambda: self.linear_slider.setValue(0))
         layout.addWidget(self.linear_slider)
         self.linear_label = QLabel('0.00 m/s')
         layout.addWidget(self.linear_label)
@@ -133,7 +120,6 @@ class DashboardWindow(QMainWindow):
         self.angular_slider.setRange(-100, 100)
         self.angular_slider.setValue(0)
         self.angular_slider.valueChanged.connect(self._on_angular_changed)
-        self.angular_slider.sliderReleased.connect(lambda: self.angular_slider.setValue(0))
         layout.addWidget(self.angular_slider)
         self.angular_label = QLabel('0.00 rad/s')
         layout.addWidget(self.angular_label)
@@ -151,7 +137,11 @@ class DashboardWindow(QMainWindow):
         self.linear_label.setText(f'{self._linear:.2f} m/s')
 
     def _on_angular_changed(self, value):
-        self._angular = (value / 100.0) * MAX_ANGULAR
+        # Slider right (+) should turn the robot right, which is a
+        # negative angular.z in the standard ROS convention (+z is
+        # counter-clockwise/left) - negate so slider direction matches
+        # turn direction.
+        self._angular = -(value / 100.0) * MAX_ANGULAR
         self.angular_label.setText(f'{self._angular:.2f} rad/s')
 
     def _stop(self):
