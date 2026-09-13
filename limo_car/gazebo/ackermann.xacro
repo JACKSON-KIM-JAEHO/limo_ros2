@@ -87,7 +87,12 @@ Es würde einfach in andere Datei angerufen werden. -->
             <xacro:insert_block name="joint_pose"/>
             <axis xyz="0 0 1" />
             <!-- Paramenten von Herstellern -->
-            <limit lower="-0.523598767" upper="0.523598767" effort="5" velocity="0.5" />
+            <!-- velocity war 0.5 rad/s - bei max_steer=0.5236 rad dauert ein
+                 Volleinschlag damit >1s, spuerbar traege trotz hohem PID-Gain
+                 im ackermann_drive plugin (P=10000). Auf 3.0 rad/s angehoben
+                 (~0.17s bis Anschlag), effort mit angehoben damit das Limit
+                 gegen damping/friction auch erreichbar ist. -->
+            <limit lower="-0.523598767" upper="0.523598767" effort="10" velocity="3.0" />
             <dynamics damping="1.0" friction="2.0"/>
         </joint>
 
@@ -172,7 +177,7 @@ Es würde einfach in andere Datei angerufen werden. -->
             <child link="${wheel_prefix}_steer_link"/>
             <xacro:insert_block name="joint_pose"/>
             <axis xyz="0 0 -1"/>
-            <limit lower="-0.523598767" upper="0.523598767" effort="5" velocity="0.5" />
+            <limit lower="-0.523598767" upper="0.523598767" effort="10" velocity="3.0" />
             <dynamics damping="1.0" friction="2.0"/>
         </joint>
 
