@@ -26,7 +26,7 @@ ros2 launch limo_car ackermann_sim.launch.py map:=<맵이름>
 ros2 run limo_dashboard dashboard_node
 ```
 
-- **Traffic Light**: 빨강/노랑/초록 버튼 — `/traffic_light/color`에 `std_msgs/String` 발행 (`limo_plugin`의 커스텀 Gazebo 플러그인이 실제 렌즈 색을 바꿈). 상세는 아래 "`traffic_light` — 신호 색 바꾸기" 참고.
+- **Traffic Light**: 빨강/노랑/초록 버튼 — `/traffic_light/color`에 `std_msgs/String` 발행 (`limo_plugin`의 커스텀 Gazebo 플러그인이 실제 렌즈 색을 바꿈). 상세는 아래 "신호등 색 바꾸기" 참고.
 - **Robot Steering**: "Keyboard Teleop" 토글 버튼 — ON일 때 대시보드 창이 `teleop_twist_keyboard`와 같은 키(`i`/`,`/`j`/`l`/`k`, 속도 조절 `q`/`z`/`w`/`x`/`e`/`c`)를 받아 `/cmd_vel`에 퍼블리시합니다 (20Hz 지속 발행). **단, `i`/`,`(전진/후진)과 `j`/`l`(좌우 회전)은 서로 독립된 축**이라 `teleop_twist_keyboard` 원본과 달리 `i`를 누른 채로 `j`나 `l`을 눌러도 전진 속도가 0으로 리셋되지 않고 곡선 주행(전진+회전 동시)이 됩니다 (원본의 대각선 전용 키 `u`/`o`/`m`/`.`는 더 이상 없음 — 각 축을 독립적으로 조합하면 되므로 불필요). **좌우 조향(`j`/`l`)은 실제 자동차 핸들처럼 자동 정렬**됩니다 — 키를 떼면 즉시 각속도가 0으로 돌아가 직진 상태가 되고, 계속 회전하려면 키를 계속 누르고 있어야 합니다 (전진 속도는 반대로 `i`/`,`/`k`로 바꾸기 전까지 유지됨). 별도 터미널에서 `ros2 run teleop_twist_keyboard teleop_twist_keyboard` 실행할 필요 없이 대시보드 창에 포커스만 있으면 됩니다. STOP 버튼으로 즉시 정지.
 - **Max speed / Max turn**: 도움말 텍스트 아래에 있는 두 스핀박스(숫자 입력칸)로 최대 전진 속도(m/s)와 최대 회전 각속도(rad/s)를 직접 입력해서 설정할 수 있습니다. `q`/`z`/`w`/`x`/`e`/`c` 키로 10%씩 조절하는 것과 같은 값이며, 어느 쪽으로 바꾸든 서로 자동으로 동기화됩니다 (범위: 속도 0.05~3.0 m/s, 회전 0.1~5.0 rad/s). `i`/`,`/`j`/`l` 키를 눌렀을 때 실제로 적용되는 크기가 바로 이 값이며, 누르는 시간에 비례해서 커지지는 않고 즉시 이 값으로 반응합니다 (반응 속도를 우선한 설계).
 - 소스: `limo_dashboard/limo_dashboard/dashboard_node.py`. 패널을 더 추가하려면 `_build_..._group(self)` 메서드를 하나 더 만들고 `_build_ui`의 레이아웃에 추가하면 됩니다.
@@ -38,15 +38,12 @@ ros2 run limo_dashboard dashboard_node
 | `empty` | 빈 월드 + 박스 장애물 3개 | (0, 0, 0°) | 최초 동작 확인용 (Phase 0) |
 | `straight_line` | 8m 직선 코스, 노란 벽으로 통로 표시, 신호등 1개 + 장애물 1개 | (-3.5, 0, 0°) | 직진 주행 + 신호 인식 + 장애물 감지 연습 (Phase 1~3) |
 | `track` | 레이싱 트랙(차선/횡단보도/주차구획 텍스처) + 신호등 1개 + 장애물 2개 | (-0.51, -3.25, 0°) | 기본 트랙 — 신호등/장애물이 기본 포함됨 |
-| `track_obstacles` | `track`과 동일 구성 (신호등 + 장애물 2개), 별도 변형으로 유지 | (-0.51, -3.25, 0°) | `track`과 사실상 동일, 이름만 구분용으로 남겨둠 |
 | `maze` | 10x10 절차적 생성 미로, 신호등 1개(시작칸), 출구 있음 | (0, 0, 0°) | SLAM/미로 탈출 미션 (Phase 5) — 상세는 아래 참고 |
-| `ramp` | 경사로(오르막→평지→내리막) + 과속방지턱 2개 | (0, 0, 0°) | IMU pitch 변화 관찰용 (Phase 4) |
 | `room` | 비정형 건물(방 2개 + 좁은 복도), 가구 장애물 포함 | (0.5, 1.5, 0°) | 실제 건물 형태 SLAM 지도 품질 비교용 |
-| `parking` | `track` 바닥 + 주차 목표 구역 2개(반투명 색 표시) | (-0.51, -3.25, 0°) | 전진/후진 주차 연습 — 좌표는 근사치, 아래 참고 |
-| `traffic_light` | `track` 바닥 + 신호등 1개 + 장애물 2개 | (-0.51, -3.25, 0°) | 신호 인식/정지출발 연습, 색 변경법 아래 참고 |
-| `integration` | 트랙 + 신호등 + 장애물 2개 + 주차 구역 2개 종합 | (-0.51, -3.25, 0°) | Phase 8 통합 프로젝트용 |
 
-신호등과 장애물 위치는 각 맵에 신호등 모델이 포함되어 있는 `track`, `track_obstacles`, `traffic_light`, `straight_line`, `maze` 다섯 맵에 확정 배치돼 있습니다. `track`/`track_obstacles`/`traffic_light`/`integration` 네 맵은 같은 `<pose>` 값을 공유하지만, `straight_line`과 `maze`는 코스 형태가 달라 각자 다른 신호등 `<pose>`를 씁니다 (Gazebo GUI에서 직접 드래그해 잡은 값). `ramp`/`room`/`parking`은 성격상 신호등을 넣지 않았습니다.
+신호등과 장애물 위치는 신호등 모델이 포함되어 있는 `track`, `straight_line`, `maze` 세 맵에 확정 배치돼 있습니다. 세 맵 모두 코스 형태가 달라 각자 다른 신호등 `<pose>`를 씁니다 (Gazebo GUI에서 직접 드래그해 잡은 값). `room`은 성격상 신호등을 넣지 않았습니다.
+
+(`track_obstacles`/`ramp`/`parking`/`traffic_light`/`integration` 5개 맵은 삭제되었습니다.)
 
 ## 맵별 상세
 
@@ -59,16 +56,11 @@ ros2 run limo_dashboard dashboard_node
 - 장애물 3개가 정답 경로 위에 배치되어 있습니다.
 - 그리드 크기·셀 크기·시드는 `worlds/maze_world.model`을 생성한 스크립트 파라미터이며, 재생성하려면 알려주시면 다시 만들어드릴 수 있습니다 (현재는 생성된 결과 SDF만 저장되어 있고 생성 스크립트 자체는 저장소에 없습니다).
 
-### `parking` / `traffic_light` / `integration` — 좌표 근사치 주의
+### `track` — 좌표 근사치 주의
 
-`track` 계열 바닥은 레이스트랙 텍스처 이미지를 8.25×6.2m 평면에 입힌 것뿐이라, 이미지 픽셀과 월드 좌표 사이의 정확한 변환식이 없습니다. 확인된 건 "Start" 표시가 있는 지점 딱 하나(픽셀 (77,222) = 월드 (-0.5137, -3.2524), 로봇이 그 자리에서 yaw≈0°로 있으면 맞다는 것)뿐입니다.
+`track` 바닥은 레이스트랙 텍스처 이미지를 8.25×6.2m 평면에 입힌 것뿐이라, 이미지 픽셀과 월드 좌표 사이의 정확한 변환식이 없습니다. 확인된 건 "Start" 표시가 있는 지점 딱 하나(픽셀 (77,222) = 월드 (-0.5137, -3.2524), 로봇이 그 자리에서 yaw≈0°로 있으면 맞다는 것)뿐입니다. 신호등 위치도 이 시작선 기준 대략적인 위치라, Gazebo에서 눈으로 보고 어긋나 있으면 알려주세요 — `worlds/track_world.model`의 `<pose>` 값만 조정하면 됩니다.
 
-- **주차 구역 2곳**은 이 하나의 기준점에서 역산한 추정치입니다. 트랙 텍스처에 그려진 실제 주차 칸 그림과 정확히 안 맞을 수 있습니다.
-- **신호등 위치**도 시작선 기준 대략적인 위치입니다.
-
-둘 다 Gazebo에서 눈으로 보고 위치가 어긋나 있으면 알려주세요 — `worlds/parking_world.model`, `worlds/traffic_light_world.model`, `worlds/integration_world.model`의 `<pose>` 값만 조정하면 됩니다.
-
-### `traffic_light` — 신호 색 바꾸기
+### 신호등 색 바꾸기
 
 **`gazebo_msgs/SetLightProperties` 서비스는 안 씁니다** — 그건 `<light>`(조명)만 바꾸고, 실제로 눈에 보이는 렌즈(`<visual>`)의 재질 색은 안 바뀝니다 (Gazebo Classic이 스폰된 모델의 visual 재질을 바꾸는 공개 API를 제공하지 않음). 처음엔 이걸로 시도했다가 "버튼 눌러도 안 바뀌고 엉뚱한 곳에 색만 비친다"는 문제를 겪었습니다.
 

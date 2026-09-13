@@ -3,13 +3,8 @@
 #
 #   ros2 launch limo_car ackermann_sim.launch.py map:=straight_line
 #   ros2 launch limo_car ackermann_sim.launch.py map:=track
-#   ros2 launch limo_car ackermann_sim.launch.py map:=track_obstacles
 #   ros2 launch limo_car ackermann_sim.launch.py map:=maze
-#   ros2 launch limo_car ackermann_sim.launch.py map:=ramp
 #   ros2 launch limo_car ackermann_sim.launch.py map:=room
-#   ros2 launch limo_car ackermann_sim.launch.py map:=parking
-#   ros2 launch limo_car ackermann_sim.launch.py map:=traffic_light
-#   ros2 launch limo_car ackermann_sim.launch.py map:=integration
 #   ros2 launch limo_car ackermann_sim.launch.py map:=empty
 #
 # Same gzserver/gzclient/spawn setup as ackermann_gazebo.launch.py /
@@ -38,13 +33,8 @@ MAPS = {
     'empty': ('worlds/empty_world.model', '0.0', '0.0', '0.0', '0.0'),
     'straight_line': ('worlds/straight_line_world.model', '-3.5', '0.0', '0.05', '0.0'),
     'track': ('worlds/track_world.model', '-0.5137', '-3.2524', '0.05', '0.0066'),
-    'track_obstacles': ('worlds/track_world_obstacles.model', '-0.5137', '-3.2524', '0.05', '0.0066'),
     'maze': ('worlds/maze_world.model', '0.0', '0.0', '0.05', '0.0'),
-    'ramp': ('worlds/ramp_world.model', '0.0', '0.0', '0.05', '0.0'),
     'room': ('worlds/room_world.model', '0.5', '1.5', '0.05', '0.0'),
-    'parking': ('worlds/parking_world.model', '-0.5137', '-3.2524', '0.05', '0.0066'),
-    'traffic_light': ('worlds/traffic_light_world.model', '-0.5137', '-3.2524', '0.05', '0.0066'),
-    'integration': ('worlds/integration_world.model', '-0.5137', '-3.2524', '0.05', '0.0066'),
 }
 
 
