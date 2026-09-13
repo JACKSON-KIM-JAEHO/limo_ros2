@@ -78,11 +78,98 @@
     </model>
 
     <!-- Ampel neben der Spur (bestätigte Position). -->
-    <include>
-      <uri>model://traffic_light</uri>
-      <name>traffic_light</name>
+    <model name="traffic_light">
       <pose>0.5 -3.55 0 0 0 1.5708</pose>
-    </include>
+    <static>true</static>
+
+    <link name="pole">
+      <pose>0 0 0 0 0 0</pose>
+      <visual name="pole_visual">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><cylinder><radius>0.045</radius><length>0.9</length></cylinder></geometry>
+        <material><script><name>Gazebo/DarkGrey</name></script></material>
+      </visual>
+      <collision name="pole_collision">
+        <pose>0 0 0.45 0 0 0</pose>
+        <geometry><cylinder><radius>0.045</radius><length>0.9</length></cylinder></geometry>
+      </collision>
+
+      <visual name="head_visual">
+        <pose>0 0 1.14 0 0 0</pose>
+        <geometry><box><size>0.18 0.12 0.48</size></box></geometry>
+        <material><script><name>Gazebo/Black</name></script></material>
+      </visual>
+
+      <!-- Red -->
+      <visual name="red_visual">
+        <pose>0 -0.065 1.30 0 0 0</pose>
+        <geometry><sphere><radius>0.06</radius></sphere></geometry>
+        <material>
+          <ambient>0.2 0 0 1</ambient>
+          <diffuse>1 0 0 1</diffuse>
+          <emissive>0.6 0 0 1</emissive>
+        </material>
+      </visual>
+      <light name="red_light" type="point">
+        <pose>0 -0.065 1.30 0 0 0</pose>
+        <diffuse>1 0 0 1</diffuse>
+        <specular>0.2 0 0 1</specular>
+        <attenuation>
+          <range>3.0</range>
+          <constant>0.2</constant>
+          <linear>0.3</linear>
+          <quadratic>0.0</quadratic>
+        </attenuation>
+        <cast_shadows>false</cast_shadows>
+      </light>
+
+      <!-- Yellow -->
+      <visual name="yellow_visual">
+        <pose>0 -0.065 1.14 0 0 0</pose>
+        <geometry><sphere><radius>0.06</radius></sphere></geometry>
+        <material>
+          <ambient>0.2 0.2 0 1</ambient>
+          <diffuse>0.05 0.05 0 1</diffuse>
+          <emissive>0.05 0.05 0 1</emissive>
+        </material>
+      </visual>
+      <light name="yellow_light" type="point">
+        <pose>0 -0.065 1.14 0 0 0</pose>
+        <diffuse>0.05 0.05 0 1</diffuse>
+        <specular>0 0 0 1</specular>
+        <attenuation>
+          <range>3.0</range>
+          <constant>0.2</constant>
+          <linear>0.3</linear>
+          <quadratic>0.0</quadratic>
+        </attenuation>
+        <cast_shadows>false</cast_shadows>
+      </light>
+
+      <!-- Green -->
+      <visual name="green_visual">
+        <pose>0 -0.065 0.98 0 0 0</pose>
+        <geometry><sphere><radius>0.06</radius></sphere></geometry>
+        <material>
+          <ambient>0 0.2 0 1</ambient>
+          <diffuse>0.05 0.05 0.05 1</diffuse>
+          <emissive>0.05 0.05 0.05 1</emissive>
+        </material>
+      </visual>
+      <light name="green_light" type="point">
+        <pose>0 -0.065 0.98 0 0 0</pose>
+        <diffuse>0.05 0.05 0.05 1</diffuse>
+        <specular>0 0 0 1</specular>
+        <attenuation>
+          <range>3.0</range>
+          <constant>0.2</constant>
+          <linear>0.3</linear>
+          <quadratic>0.0</quadratic>
+        </attenuation>
+        <cast_shadows>false</cast_shadows>
+      </light>
+    </link>
+  </model>
 
     <physics type="ode">
       <real_time_update_rate>1000.0</real_time_update_rate>
