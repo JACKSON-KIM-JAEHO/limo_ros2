@@ -94,6 +94,10 @@ class DashboardWindow(QMainWindow):
         self._angular = 0.0
         self._speed = 0.5   # m/s, teleop_twist_keyboard's default
         self._turn = 1.0    # rad/s, teleop_twist_keyboard's default
+        # Which angular key (if any) is currently held down, so releasing
+        # it can self-center the steering back to 0 (unlike linear, which
+        # stays at whatever speed was last set until explicitly changed).
+        self._active_angular_key = None
 
         self._build_ui()
         self.setFocusPolicy(Qt.StrongFocus)
@@ -144,8 +148,8 @@ class DashboardWindow(QMainWindow):
 
         layout.addWidget(QLabel(
             'i/,: forward/back   j/l: turn left/right\n'
-            '(hold i, tap j/l to curve - axes are independent)   k: stop\n'
-            'q/z: speed ±10%   w/x: linear only   e/c: angular only'
+            '(hold i, tap j/l to curve - releasing j/l re-centers steering)\n'
+            'k: stop   q/z: speed ±10%   w/x: linear only   e/c: angular only'
         ))
 
         self.speed_label = QLabel(f'speed {self._speed:.2f} m/s  turn {self._turn:.2f} rad/s')
@@ -179,6 +183,7 @@ class DashboardWindow(QMainWindow):
         else:
             self._linear = 0.0
             self._angular = 0.0
+            self._active_angular_key = None
             self._update_cmd_label()
 
     def keyPressEvent(self, event):
@@ -190,9 +195,11 @@ class DashboardWindow(QMainWindow):
             self._linear = LINEAR_KEYS[key] * self._speed
         elif key in ANGULAR_KEYS:
             self._angular = ANGULAR_KEYS[key] * self._turn
+            self._active_angular_key = key
         elif key in STOP_KEYS:
             self._linear = 0.0
             self._angular = 0.0
+            self._active_angular_key = None
         elif key in SPEED_UP_KEYS:
             self._speed *= SPEED_STEP
             self._turn *= SPEED_STEP
@@ -213,12 +220,29 @@ class DashboardWindow(QMainWindow):
         self.speed_label.setText(f'speed {self._speed:.2f} m/s  turn {self._turn:.2f} rad/s')
         self._update_cmd_label()
 
+    def keyReleaseEvent(self, event):
+        # Steering self-centers: releasing the angular key that's
+        # currently driving the turn snaps angular back to 0, same as a
+        # real car's wheel returning to straight when you let go. Linear
+        # speed is untouched here - it keeps going until i/,/k changes it.
+        if not self._teleop_active or event.isAutoRepeat():
+            super().keyReleaseEvent(event)
+            return
+        key = event.key()
+        if key in ANGULAR_KEYS and key == self._active_angular_key:
+            self._angular = 0.0
+            self._active_angular_key = None
+            self._update_cmd_label()
+        else:
+            super().keyReleaseEvent(event)
+
     def _update_cmd_label(self):
         self.cmd_label.setText(f'linear {self._linear:.2f} m/s  angular {self._angular:.2f} rad/s')
 
     def _stop(self):
         self._linear = 0.0
         self._angular = 0.0
+        self._active_angular_key = None
         self._update_cmd_label()
         self.ros_node.publish_cmd_vel(0.0, 0.0)
 
